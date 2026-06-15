@@ -1,0 +1,48 @@
+{% extends 'clientes/base.html' %}
+{% load static %}
+
+{% block titulo %}Login | Dívidas da Barbearia{% endblock %}
+
+{% block conteudo %}
+<div class="login-shell row justify-content-center align-items-center">
+    <div class="col-md-6 col-lg-4">
+        <div class="card login-card border-0">
+            <div class="card-body p-4 p-md-5">
+                <div class="text-center mb-4">
+                    <img src="{% static 'clientes/img/logo-riko.jpeg' %}" alt="Riko Barbearia" class="login-logo mb-3">
+                    <h1 class="h3 page-title mb-1">Acesso interno</h1>
+                    <p class="text-muted mb-0">Controle simples das dívidas da barbearia.</p>
+                </div>
+
+                <form method="post">
+                    {% csrf_token %}
+
+                    {% if form.non_field_errors %}
+                        <div class="alert alert-danger">
+                            Usuário ou senha inválidos.
+                        </div>
+                    {% endif %}
+
+                    <div class="mb-3">
+                        <label class="form-label" for="{{ form.username.id_for_label }}">Usuário</label>
+                        <input type="text" name="username" autofocus autocapitalize="none" autocomplete="username" maxlength="150" class="form-control" required id="{{ form.username.id_for_label }}" placeholder="Digite seu usuário">
+                    </div>
+
+                    <div class="mb-4">
+                        <label class="form-label" for="{{ form.password.id_for_label }}">Senha</label>
+                        <input type="password" name="password" autocomplete="current-password" class="form-control" required id="{{ form.password.id_for_label }}" placeholder="Digite sua senha">
+                    </div>
+
+                    <button type="submit" class="btn btn-brand w-100 btn-lg">
+                        Entrar
+                    </button>
+                </form>
+
+                <p class="small text-muted text-center mt-4 mb-0">
+                    Esqueceu a senha? Peça para o administrador redefinir em Funcionários.
+                </p>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

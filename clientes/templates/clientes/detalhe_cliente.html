@@ -1,0 +1,162 @@
+{% extends 'clientes/base.html' %}
+
+{% block titulo %}{{ cliente.nome }} | Dívidas da Barbearia{% endblock %}
+
+{% block conteudo %}
+<a href="{% url 'lista_clientes' %}" class="btn btn-outline-secondary mb-3">
+    ← Voltar
+</a>
+
+<div class="card mb-4 profile-card">
+    <div class="card-body">
+        <div class="d-flex justify-content-between align-items-start flex-wrap gap-3">
+            <div>
+                <span class="eyebrow">Ficha do cliente</span>
+                <h1 class="page-title mb-1">{{ cliente.nome }}</h1>
+                <p class="text-muted mb-0">
+                    {{ cliente.telefone|default:'Sem telefone cadastrado' }}
+                </p>
+                {% if cliente.observacao %}
+                    <p class="mt-3 mb-0">{{ cliente.observacao }}</p>
+                {% endif %}
+            </div>
+
+            <div class="d-flex gap-2 flex-wrap">
+                <a href="{% url 'editar_cliente' cliente.id %}" class="btn btn-outline-dark">
+                    Editar cliente
+                </a>
+                <a href="{% url 'nova_divida' %}?cliente={{ cliente.id }}" class="btn btn-success">
+                    + Nova dívida
+                </a>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="row g-3 mb-4">
+    <div class="col-md-6">
+        <div class="card stat-card stat-pendentes">
+            <div class="card-body">
+                <div class="stat-label">Dívidas pendentes</div>
+                <div class="stat-number">{{ qtd_pendentes }}</div>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-6">
+        <div class="card stat-card stat-valor">
+            <div class="card-body">
+                <div class="stat-label">Total pendente</div>
+                <div class="stat-number">{{ total_pendente_formatado }}</div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="d-flex justify-content-between align-items-center flex-wrap gap-3 mb-3">
+    <h2 class="h4 mb-0">Dívidas</h2>
+
+    {% if qtd_pendentes %}
+        <button type="button" class="btn btn-warning" data-bs-toggle="modal" data-bs-target="#modalPagarTodas">
+            ✅ Marcar todas como pagas
+        </button>
+    {% endif %}
+</div>
+
+{% for divida in dividas %}
+    <div class="card mb-3 debt-card {% if divida.status == 'paga' %}debt-paid{% endif %}">
+        <div class="card-body">
+            <div class="d-flex justify-content-between align-items-start flex-wrap gap-3">
+                <div>
+                    <h5 class="mb-1">R$ {{ divida.valor }}</h5>
+                    <p class="mb-2">{{ divida.descricao }}</p>
+
+                    {% if divida.status == 'pendente' %}
+                        <span class="badge badge-pendente rounded-pill">Pendente</span>
+                    {% else %}
+                        <span class="badge badge-paga rounded-pill">Paga</span>
+                    {% endif %}
+
+                    <div class="small text-muted mt-2">
+                        Criada em {{ divida.data_criacao|date:'d/m/Y H:i' }}
+                        {% if divida.data_pagamento %}
+                            · Paga em {{ divida.data_pagamento|date:'d/m/Y H:i' }}
+                        {% endif %}
+                    </div>
+                </div>
+
+                <div class="d-flex gap-2 flex-wrap">
+                    <a href="{% url 'editar_divida' divida.id %}" class="btn btn-outline-dark btn-sm">
+                        Editar
+                    </a>
+                    {% if divida.status == 'pendente' %}
+                        <button type="button"
+                                class="btn btn-success btn-sm"
+                                data-bs-toggle="modal"
+                                data-bs-target="#modalPagar{{ divida.id }}">
+                            ✅ Marcar como paga
+                        </button>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </div>
+
+    {% if divida.status == 'pendente' %}
+        <div class="modal fade" id="modalPagar{{ divida.id }}" tabindex="-1" aria-hidden="true">
+            <div class="modal-dialog modal-dialog-centered">
+                <div class="modal-content rounded-4 border-0">
+                    <div class="modal-header">
+                        <h5 class="modal-title">Confirmar pagamento</h5>
+                        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Fechar"></button>
+                    </div>
+                    <div class="modal-body">
+                        Marcar a dívida de <strong>R$ {{ divida.valor }}</strong> como paga?
+                        <br>
+                        <span class="text-muted">{{ divida.descricao }}</span>
+                    </div>
+                    <div class="modal-footer">
+                        <button type="button" class="btn btn-outline-secondary" data-bs-dismiss="modal">Cancelar</button>
+                        <form method="post" action="{% url 'marcar_como_paga' divida.id %}" class="m-0">
+                            {% csrf_token %}
+                            <button type="submit" class="btn btn-success">Confirmar pagamento</button>
+                        </form>
+                    </div>
+                </div>
+            </div>
+        </div>
+    {% endif %}
+{% empty %}
+    <div class="card empty-state">
+        <div class="card-body text-center py-5">
+            <h5>Cliente sem dívidas.</h5>
+            <p class="text-muted mb-3">Adicione uma dívida quando necessário.</p>
+            <a href="{% url 'nova_divida' %}?cliente={{ cliente.id }}" class="btn btn-success">+ Nova dívida</a>
+        </div>
+    </div>
+{% endfor %}
+
+{% if qtd_pendentes %}
+    <div class="modal fade" id="modalPagarTodas" tabindex="-1" aria-hidden="true">
+        <div class="modal-dialog modal-dialog-centered">
+            <div class="modal-content rounded-4 border-0">
+                <div class="modal-header">
+                    <h5 class="modal-title">Confirmar pagamento total</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Fechar"></button>
+                </div>
+                <div class="modal-body">
+                    Marcar <strong>{{ qtd_pendentes }}</strong> dívida(s) pendente(s) de <strong>{{ cliente.nome }}</strong> como pagas?
+                    <br>
+                    <span class="text-muted">Total pendente: {{ total_pendente_formatado }}</span>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-outline-secondary" data-bs-dismiss="modal">Cancelar</button>
+                    <form method="post" action="{% url 'pagar_todas_dividas' cliente.id %}" class="m-0">
+                        {% csrf_token %}
+                        <button type="submit" class="btn btn-warning">Confirmar todas</button>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+{% endif %}
+{% endblock %}

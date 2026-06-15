@@ -1,0 +1,30 @@
+# Python
+__pycache__/
+*.py[cod]
+*.pyo
+*.pyd
+
+# Ambientes virtuais
+.venv/
+venv/
+env/
+
+# Django / banco local / arquivos sensíveis
+db.sqlite3
+*.sqlite3
+.env
+.env.*
+!.env.example
+staticfiles/
+media/
+backups/
+*.zip
+
+# IDE / sistema
+.idea/
+.vscode/
+.DS_Store
+Thumbs.db
+
+# Logs
+*.log

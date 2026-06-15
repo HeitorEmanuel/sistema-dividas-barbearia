@@ -1,0 +1,55 @@
+{% extends 'clientes/base.html' %}
+
+{% block titulo %}{{ titulo }} | Dívidas da Barbearia{% endblock %}
+
+{% block conteudo %}
+{% if voltar_url and voltar_id %}
+    <a href="{% url voltar_url voltar_id %}" class="btn btn-outline-secondary mb-3">← Voltar</a>
+{% elif voltar_url %}
+    <a href="{% url voltar_url %}" class="btn btn-outline-secondary mb-3">← Voltar</a>
+{% else %}
+    <a href="{% url 'lista_clientes' %}" class="btn btn-outline-secondary mb-3">← Voltar</a>
+{% endif %}
+
+<div class="row justify-content-center">
+    <div class="col-lg-7">
+        <div class="card form-card">
+            <div class="card-body p-4 p-md-5">
+                <h1 class="page-title h3 mb-1">{{ titulo }}</h1>
+                {% if subtitulo %}
+                    <p class="text-muted mb-4">{{ subtitulo }}</p>
+                {% endif %}
+
+                <form method="post" novalidate>
+                    {% csrf_token %}
+
+                    {% if form.non_field_errors %}
+                        <div class="alert alert-danger">
+                            {{ form.non_field_errors }}
+                        </div>
+                    {% endif %}
+
+                    {% for field in form %}
+                        <div class="mb-3">
+                            <label for="{{ field.id_for_label }}" class="form-label">
+                                {{ field.label }}
+                            </label>
+                            {{ field }}
+                            {% if field.help_text %}
+                                <div class="form-text">{{ field.help_text }}</div>
+                            {% endif %}
+                            {% for error in field.errors %}
+                                <div class="text-danger small mt-1">{{ error }}</div>
+                            {% endfor %}
+                        </div>
+                    {% endfor %}
+
+                    <button type="submit" class="btn btn-brand w-100 btn-lg">
+                        {{ botao }}
+                    </button>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

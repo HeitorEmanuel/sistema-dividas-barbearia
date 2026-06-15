@@ -1,0 +1,182 @@
+{% extends 'clientes/base.html' %}
+
+{% block titulo %}Clientes | Dívidas da Barbearia{% endblock %}
+
+{% block conteudo %}
+<section class="hero-card mb-4">
+    <div class="hero-content">
+        <div>
+            <span class="eyebrow">Painel interno</span>
+            <h1 class="page-title mb-2">Riko Barbearia</h1>
+            <p class="text-muted mb-0">Controle rápido, simples e seguro das dívidas pendentes.</p>
+        </div>
+
+        <div class="d-flex flex-wrap action-bar">
+            <a href="{% url 'novo_cliente' %}" class="btn btn-brand">
+                + Novo cliente
+            </a>
+            <a href="{% url 'nova_divida' %}" class="btn btn-success">
+                + Nova dívida
+            </a>
+            <a href="{% url 'relatorio' %}" class="btn btn-outline-dark">
+                📄 Relatórios
+            </a>
+        </div>
+    </div>
+</section>
+
+<div class="row g-3 mb-4">
+    <div class="col-md-4">
+        <div class="card stat-card stat-clientes">
+            <div class="card-body">
+                <div class="stat-label">Clientes cadastrados</div>
+                <div class="stat-number">{{ total_clientes }}</div>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-4">
+        <div class="card stat-card stat-pendentes">
+            <div class="card-body">
+                <div class="stat-label">Dívidas pendentes</div>
+                <div class="stat-number">{{ total_dividas_pendentes }}</div>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-4">
+        <div class="card stat-card stat-valor">
+            <div class="card-body">
+                <div class="stat-label">Valor a receber</div>
+                <div class="stat-number">{{ total_a_receber_formatado }}</div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="row g-4">
+    <div class="col-lg-8">
+        <form method="get" class="card filter-card mb-4">
+            <div class="card-body">
+                <div class="row g-2 align-items-end">
+                    <div class="col-md-5">
+                        <label class="form-label">Pesquisar</label>
+                        <input type="text"
+                               name="busca"
+                               class="form-control"
+                               placeholder="Nome ou telefone"
+                               value="{{ busca }}">
+                    </div>
+
+                    <div class="col-md-3">
+                        <label class="form-label">Mostrar</label>
+                        <select name="filtro" class="form-select">
+                            <option value="todos" {% if filtro == 'todos' %}selected{% endif %}>Todos os clientes</option>
+                            <option value="pendentes" {% if filtro == 'pendentes' %}selected{% endif %}>Somente com dívida</option>
+                            <option value="em_dia" {% if filtro == 'em_dia' %}selected{% endif %}>Somente em dia</option>
+                        </select>
+                    </div>
+
+                    <div class="col-md-3">
+                        <label class="form-label">Ordenar</label>
+                        <select name="ordenacao" class="form-select">
+                            <option value="nome" {% if ordenacao == 'nome' %}selected{% endif %}>Nome</option>
+                            <option value="maior_divida" {% if ordenacao == 'maior_divida' %}selected{% endif %}>Maior dívida</option>
+                            <option value="mais_pendencias" {% if ordenacao == 'mais_pendencias' %}selected{% endif %}>Mais pendências</option>
+                        </select>
+                    </div>
+
+                    <div class="col-md-1 d-grid">
+                        <button class="btn btn-dark" type="submit">Filtrar</button>
+                    </div>
+                </div>
+
+                {% if busca or filtro != 'todos' or ordenacao != 'nome' %}
+                    <div class="mt-3">
+                        <a href="{% url 'lista_clientes' %}" class="small text-decoration-none">
+                            Limpar filtros
+                        </a>
+                    </div>
+                {% endif %}
+            </div>
+        </form>
+
+        <div class="row g-3">
+            {% for cliente in clientes %}
+                <div class="col-md-6">
+                    <div class="card h-100 client-card">
+                        <div class="card-body">
+                            <div class="d-flex justify-content-between align-items-start gap-3">
+                                <h5 class="mb-1">
+                                    <a class="client-name" href="{% url 'detalhe_cliente' cliente.id %}">
+                                        {{ cliente.nome }}
+                                    </a>
+                                </h5>
+
+                                {% if cliente.qtd_pendentes %}
+                                    <span class="badge rounded-pill badge-pendente">
+                                        {{ cliente.qtd_pendentes }} pendente(s)
+                                    </span>
+                                {% else %}
+                                    <span class="badge rounded-pill badge-paga">Em dia</span>
+                                {% endif %}
+                            </div>
+
+                            <p class="text-muted mb-3">
+                                {{ cliente.telefone|default:'Sem telefone' }}
+                            </p>
+
+                            <div class="d-flex justify-content-between align-items-center">
+                                <div>
+                                    <div class="small text-muted">Total pendente</div>
+                                    <strong>{{ cliente.total_pendente_formatado }}</strong>
+                                </div>
+
+                                <a href="{% url 'detalhe_cliente' cliente.id %}" class="btn btn-outline-dark btn-sm">
+                                    Abrir ficha
+                                </a>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            {% empty %}
+                <div class="col-12">
+                    <div class="card empty-state">
+                        <div class="card-body text-center py-5">
+                            <h5>Nenhum cliente encontrado.</h5>
+                            <p class="text-muted mb-3">Tente outra busca ou cadastre um novo cliente.</p>
+                            <a href="{% url 'novo_cliente' %}" class="btn btn-brand">Cadastrar cliente</a>
+                        </div>
+                    </div>
+                </div>
+            {% endfor %}
+        </div>
+    </div>
+
+    <div class="col-lg-4">
+        <div class="card side-panel mb-3">
+            <div class="card-body">
+                <div class="d-flex justify-content-between align-items-center mb-3">
+                    <h2 class="h5 mb-0">Últimas ações</h2>
+                    <a href="{% url 'historico' %}" class="small text-decoration-none">Ver tudo</a>
+                </div>
+
+                {% for item in ultimas_acoes %}
+                    <div class="timeline-item">
+                        <strong>{{ item.usuario }}</strong>
+                        <p class="mb-1">{{ item.acao }}</p>
+                        <small class="text-muted">{{ item.data|date:'d/m/Y H:i' }}</small>
+                    </div>
+                {% empty %}
+                    <p class="text-muted mb-0">Nenhuma ação registrada ainda.</p>
+                {% endfor %}
+            </div>
+        </div>
+
+        <div class="card tip-card">
+            <div class="card-body">
+                <h2 class="h6">Uso rápido</h2>
+                <p class="text-muted mb-0">Pesquise o cliente, abra a ficha e marque apenas a dívida paga. Use “marcar todas” somente quando todo o saldo foi quitado.</p>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
