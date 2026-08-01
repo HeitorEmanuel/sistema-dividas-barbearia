@@ -30,7 +30,7 @@
                     {% endif %}
 
                     {% for field in form %}
-                        {% if field.name == 'cliente' and field.field.widget.attrs.data-client-select %}
+                        {% if field.name == 'cliente' %}
                             <div class="mb-3">
                                 <label for="cliente-search" class="form-label">Buscar cliente</label>
                                 <input
