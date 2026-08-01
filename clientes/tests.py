@@ -21,7 +21,11 @@ class ClienteExclusaoTests(TestCase):
             status=Divida.Status.PENDENTE,
         )
 
-        response = self.client.post(reverse('excluir_cliente', args=[cliente.id]), follow=True)
+        response = self.client.post(
+            reverse('excluir_cliente', args=[cliente.id]),
+            follow=True,
+            secure=True,
+        )
 
         self.assertEqual(response.status_code, 200)
         self.assertTrue(Cliente.objects.filter(id=cliente.id).exists())
@@ -36,7 +40,11 @@ class ClienteExclusaoTests(TestCase):
             status=Divida.Status.PAGA,
         )
 
-        response = self.client.post(reverse('excluir_cliente', args=[cliente.id]), follow=True)
+        response = self.client.post(
+            reverse('excluir_cliente', args=[cliente.id]),
+            follow=True,
+            secure=True,
+        )
 
         self.assertEqual(response.status_code, 200)
         self.assertFalse(Cliente.objects.filter(id=cliente.id).exists())
@@ -45,7 +53,10 @@ class ClienteExclusaoTests(TestCase):
     def test_get_nao_exclui_cliente(self):
         cliente = Cliente.objects.create(nome='Cliente protegido')
 
-        response = self.client.get(reverse('excluir_cliente', args=[cliente.id]))
+        response = self.client.get(
+            reverse('excluir_cliente', args=[cliente.id]),
+            secure=True,
+        )
 
         self.assertEqual(response.status_code, 302)
         self.assertTrue(Cliente.objects.filter(id=cliente.id).exists())
@@ -79,6 +90,7 @@ class FuncionarioEdicaoTests(TestCase):
                 'password2': 'NovaSenhaSegura123!',
             },
             follow=True,
+            secure=True,
         )
 
         self.assertEqual(response.status_code, 200)
@@ -103,6 +115,7 @@ class FuncionarioEdicaoTests(TestCase):
                 'password2': '',
             },
             follow=True,
+            secure=True,
         )
 
         self.assertEqual(response.status_code, 200)
@@ -123,6 +136,7 @@ class FuncionarioEdicaoTests(TestCase):
                 'password2': '',
             },
             follow=True,
+            secure=True,
         )
 
         self.assertEqual(response.status_code, 200)
@@ -133,7 +147,10 @@ class FuncionarioEdicaoTests(TestCase):
     def test_usuario_comum_nao_acessa_edicao_de_funcionario(self):
         self.client.force_login(self.funcionario)
 
-        response = self.client.get(reverse('editar_funcionario', args=[self.admin.id]))
+        response = self.client.get(
+            reverse('editar_funcionario', args=[self.admin.id]),
+            secure=True,
+        )
 
         self.assertEqual(response.status_code, 302)
 
@@ -145,7 +162,7 @@ class NovaDividaBuscaClienteTests(TestCase):
         self.client.force_login(self.usuario)
 
     def test_formulario_exibe_busca_instantanea_de_cliente(self):
-        response = self.client.get(reverse('nova_divida'))
+        response = self.client.get(reverse('nova_divida'), secure=True)
 
         self.assertEqual(response.status_code, 200)
         self.assertContains(response, 'id="cliente-search"')
@@ -160,6 +177,7 @@ class NovaDividaBuscaClienteTests(TestCase):
                 'valor': '35.00',
                 'descricao': 'Corte + barba',
             },
+            secure=True,
         )
 
         self.assertEqual(response.status_code, 302)
@@ -173,6 +191,7 @@ class NovaDividaBuscaClienteTests(TestCase):
                 'valor': '35.00',
                 'descricao': 'Corte + barba',
             },
+            secure=True,
         )
 
         self.assertEqual(response.status_code, 200)
