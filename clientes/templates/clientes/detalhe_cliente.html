@@ -25,6 +25,11 @@
                 <a href="{% url 'editar_cliente' cliente.id %}" class="btn btn-outline-dark">
                     Editar cliente
                 </a>
+                {% if not qtd_pendentes %}
+                    <button type="button" class="btn btn-outline-danger" data-bs-toggle="modal" data-bs-target="#modalExcluirCliente">
+                        Excluir cliente
+                    </button>
+                {% endif %}
                 <a href="{% url 'nova_divida' %}?cliente={{ cliente.id }}" class="btn btn-success">
                     + Nova dívida
                 </a>
@@ -32,6 +37,12 @@
         </div>
     </div>
 </div>
+
+{% if qtd_pendentes %}
+    <div class="alert alert-secondary small">
+        A exclusão do cliente fica disponível somente quando todas as dívidas estiverem pagas.
+    </div>
+{% endif %}
 
 <div class="row g-3 mb-4">
     <div class="col-md-6">
@@ -153,6 +164,30 @@
                     <form method="post" action="{% url 'pagar_todas_dividas' cliente.id %}" class="m-0">
                         {% csrf_token %}
                         <button type="submit" class="btn btn-warning">Confirmar todas</button>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+{% else %}
+    <div class="modal fade" id="modalExcluirCliente" tabindex="-1" aria-hidden="true">
+        <div class="modal-dialog modal-dialog-centered">
+            <div class="modal-content rounded-4 border-0">
+                <div class="modal-header">
+                    <h5 class="modal-title">Excluir cliente</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Fechar"></button>
+                </div>
+                <div class="modal-body">
+                    Tem certeza que deseja excluir <strong>{{ cliente.nome }}</strong>?
+                    <p class="text-danger small mt-2 mb-0">
+                        Esta ação também remove do banco as dívidas já pagas vinculadas a esse cliente e não pode ser desfeita pelo sistema.
+                    </p>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-outline-secondary" data-bs-dismiss="modal">Cancelar</button>
+                    <form method="post" action="{% url 'excluir_cliente' cliente.id %}" class="m-0">
+                        {% csrf_token %}
+                        <button type="submit" class="btn btn-danger">Excluir definitivamente</button>
                     </form>
                 </div>
             </div>
