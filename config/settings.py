@@ -9,15 +9,20 @@ import os
 from pathlib import Path
 
 import dj_database_url
+from django.core.exceptions import ImproperlyConfigured
 
 BASE_DIR = Path(__file__).resolve().parent.parent
 
-SECRET_KEY = os.environ.get(
-    'SECRET_KEY',
-    'django-insecure-dev-riko-barbearia-troque-esta-chave-antes-de-colocar-online'
-)
+DEBUG = os.environ.get('DEBUG', 'False').lower() == 'true'
 
-DEBUG = os.environ.get('DEBUG', 'True').lower() == 'true'
+SECRET_KEY = os.environ.get('SECRET_KEY')
+if not SECRET_KEY:
+    if DEBUG:
+        SECRET_KEY = 'django-insecure-local-development-only-do-not-use-in-production'
+    else:
+        raise ImproperlyConfigured(
+            'SECRET_KEY não configurada. Defina uma chave secreta no ambiente antes de iniciar em produção.'
+        )
 
 ALLOWED_HOSTS = [host.strip() for host in os.environ.get(
     'ALLOWED_HOSTS',

@@ -30,18 +30,56 @@
                     {% endif %}
 
                     {% for field in form %}
-                        <div class="mb-3">
-                            <label for="{{ field.id_for_label }}" class="form-label">
-                                {{ field.label }}
-                            </label>
-                            {{ field }}
-                            {% if field.help_text %}
-                                <div class="form-text">{{ field.help_text }}</div>
-                            {% endif %}
-                            {% for error in field.errors %}
-                                <div class="text-danger small mt-1">{{ error }}</div>
-                            {% endfor %}
-                        </div>
+                        {% if field.name == 'cliente' %}
+                            <div class="mb-3">
+                                <label for="cliente-search" class="form-label">Buscar cliente</label>
+                                <input
+                                    type="search"
+                                    id="cliente-search"
+                                    class="form-control mb-2"
+                                    placeholder="Digite nome ou telefone"
+                                    autocomplete="off"
+                                    aria-describedby="cliente-search-help"
+                                >
+                                <div id="cliente-search-help" class="form-text mb-2">
+                                    Digite parte do nome ou telefone e selecione o cliente abaixo.
+                                </div>
+                                <label for="{{ field.id_for_label }}" class="form-label">{{ field.label }}</label>
+                                {{ field }}
+                                <div id="cliente-search-empty" class="form-text text-danger d-none">
+                                    Nenhum cliente encontrado com essa busca.
+                                </div>
+                                {% for error in field.errors %}
+                                    <div class="text-danger small mt-1">{{ error }}</div>
+                                {% endfor %}
+                            </div>
+                        {% elif field.field.widget.input_type == 'checkbox' %}
+                            <div class="form-check mb-3">
+                                {{ field }}
+                                <label for="{{ field.id_for_label }}" class="form-check-label">
+                                    {{ field.label }}
+                                </label>
+                                {% if field.help_text %}
+                                    <div class="form-text">{{ field.help_text }}</div>
+                                {% endif %}
+                                {% for error in field.errors %}
+                                    <div class="text-danger small mt-1">{{ error }}</div>
+                                {% endfor %}
+                            </div>
+                        {% else %}
+                            <div class="mb-3">
+                                <label for="{{ field.id_for_label }}" class="form-label">
+                                    {{ field.label }}
+                                </label>
+                                {{ field }}
+                                {% if field.help_text %}
+                                    <div class="form-text">{{ field.help_text }}</div>
+                                {% endif %}
+                                {% for error in field.errors %}
+                                    <div class="text-danger small mt-1">{{ error }}</div>
+                                {% endfor %}
+                            </div>
+                        {% endif %}
                     {% endfor %}
 
                     <button type="submit" class="btn btn-brand w-100 btn-lg">
@@ -52,4 +90,60 @@
         </div>
     </div>
 </div>
+
+<script>
+document.addEventListener('DOMContentLoaded', function () {
+    const searchInput = document.getElementById('cliente-search');
+    const select = document.querySelector('select[data-client-select="true"]');
+    const emptyMessage = document.getElementById('cliente-search-empty');
+
+    if (!searchInput || !select) {
+        return;
+    }
+
+    const options = Array.from(select.options);
+    const selectedOption = select.options[select.selectedIndex];
+    if (selectedOption && selectedOption.value) {
+        searchInput.value = selectedOption.text.trim();
+    }
+
+    function normalizeText(value) {
+        return value
+            .normalize('NFD')
+            .replace(/[\u0300-\u036f]/g, '')
+            .toLowerCase()
+            .trim();
+    }
+
+    function filterClients() {
+        const term = normalizeText(searchInput.value);
+        let visibleCount = 0;
+
+        options.forEach(function (option) {
+            if (!option.value) {
+                option.hidden = false;
+                return;
+            }
+
+            const matches = !term || normalizeText(option.text).includes(term);
+            option.hidden = !matches;
+            if (matches) {
+                visibleCount += 1;
+            }
+        });
+
+        if (emptyMessage) {
+            emptyMessage.classList.toggle('d-none', visibleCount > 0 || !term);
+        }
+    }
+
+    searchInput.addEventListener('input', filterClients);
+    select.addEventListener('change', function () {
+        const option = select.options[select.selectedIndex];
+        if (option && option.value) {
+            searchInput.value = option.text.trim();
+        }
+    });
+});
+</script>
 {% endblock %}
